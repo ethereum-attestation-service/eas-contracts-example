@@ -49,11 +49,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Install Foundry
-        uses: foundry-rs/foundry-toolchain@v1
-        with:
-          version: nightly
-
       - name: Lint
         run: pnpm lint
 
@@ -62,6 +57,3 @@ jobs:
 
       - name: Test
         run: pnpm test
-
-      - name: Compile (Foundry)
-        run: forge build
