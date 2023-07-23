@@ -26,7 +26,7 @@
     "test:coverage": "hardhat coverage",
     "lint": "pnpm lint:sol && pnpm lint:ts",
     "lint:sol": "solhint --max-warnings 0 contracts/**/*.sol",
-    "lint:ts": "pnpm eslint components data test utils",
+    "lint:ts": "pnpm eslint components test utils",
     "format": "prettier --check --write contracts/**/*.sol *.ts components/**/*.ts test/**/*.ts utils/**/*.ts --config .prettierrc",
     "size": "hardhat size-contracts",
     "flatten": "hardhat flatten",

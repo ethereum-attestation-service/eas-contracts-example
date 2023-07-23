@@ -16,5 +16,5 @@
     },
     "outDir": "./dist/typechain-types"
   },
-  "include": ["./components", "./hardhat.config.ts", "./scripts", "./test", "./typechain-types", "./utils"]
+  "include": ["./components", "./hardhat.config.ts", "./test", "./typechain-types", "./utils"]
 }
