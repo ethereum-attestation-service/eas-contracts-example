@@ -5,15 +5,11 @@ pragma solidity 0.8.21;
 import { IEAS, Attestation } from "@ethereum-attestation-service/eas-contracts/contracts/IEAS.sol";
 import { SchemaResolver } from "@ethereum-attestation-service/eas-contracts/contracts/resolver/SchemaResolver.sol";
 
-/**
- * @title A sample schema resolver that logs a uint256 input.
- */
+/// @title ExampleUintResolver
+/// @notice A sample schema resolver that logs a uint256 input.
 contract ExampleUintResolver is SchemaResolver {
-    /**
-     * @dev Emitted to log a uint256 value.
-     *
-     * @param value The attested value.
-     */
+    /// @notice Emitted to log a uint256 value.
+    /// @param value The attested value.
     event Log(uint256 value);
 
     constructor(IEAS eas) SchemaResolver(eas) {}
