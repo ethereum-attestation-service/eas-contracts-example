@@ -1,11 +1,11 @@
-import {
-  EAS__factory,
-  SchemaRegistry__factory,
-  ExampleAttester__factory,
-  ExampleUintResolver__factory
-} from '../typechain-types';
 import { ContractFactory, Signer } from 'ethers';
 import { ethers } from 'hardhat';
+import {
+  EAS__factory,
+  ExampleAttester__factory,
+  ExampleUintResolver__factory,
+  SchemaRegistry__factory
+} from '../typechain-types';
 
 export * from '../typechain-types';
 
