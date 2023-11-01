@@ -17,6 +17,7 @@ contract OffchainAttestationVerifier is EIP712 {
     /// @notice A struct representing an offchain attestation request.
     struct OffchainAttestation {
         Version version; // The version of the attestation.
+        address attester; // The attester of the attestation.
         bytes32 schema; // The unique identifier of the schema.
         address recipient; // The recipient of the attestation.
         uint64 time; // The time when the attestation was signed.
@@ -78,10 +79,9 @@ contract OffchainAttestationVerifier is EIP712 {
 
     /// @notice Verify the offchain attestation.
     /// @param attestation The offchain attestation to verify.
-    /// @param attester The address of the attester.
     /// @return The status of the verification.
-    function verify(OffchainAttestation calldata attestation, address attester) external view returns (bool) {
-        if (attester == address(0)) {
+    function verify(OffchainAttestation calldata attestation) external view returns (bool) {
+        if (attestation.attester == address(0)) {
             return false;
         }
 
@@ -108,7 +108,8 @@ contract OffchainAttestationVerifier is EIP712 {
         // Verify the EIP712/EIP1271 signature.
         bytes32 hash;
 
-        // Derive the right typed data hash based on the offchain attestation version.
+        // Derive the right typed data hash based on the offchain attestation version. Please note that due to previous
+        // checks, don't need a case for the unknown version below.
         if (_version == Version.LEGACY) {
             hash = _hashTypedDataV4(
                 keccak256(
@@ -140,14 +141,12 @@ contract OffchainAttestationVerifier is EIP712 {
                     )
                 )
             );
-        } else {
-            return false;
         }
 
         Signature memory signature = attestation.signature;
         if (
             !SignatureChecker.isValidSignatureNow(
-                attester,
+                attestation.attester,
                 hash,
                 abi.encodePacked(signature.r, signature.s, signature.v)
             )
