@@ -103,9 +103,6 @@ devDependencies:
   prettier-plugin-solidity:
     specifier: ^1.1.3
     version: 1.1.3(prettier@3.0.3)
-  solc:
-    specifier: 0.8.21
-    version: 0.8.21
   solhint:
     specifier: ^3.6.2
     version: 3.6.2(typescript@5.2.2)
@@ -1366,7 +1363,7 @@ packages:
     resolution: {integrity: sha512-osvveYtyzdEVbt3OfwwXFr4P2iVBL5u1Q3q4ONBfDY/UpOuXmOlbgwc1xECEboY8wIays8Yt6onaWMUdUbfl0A==}
     dependencies:
       '@noble/curves': 1.1.0
-      '@noble/hashes': 1.3.1
+      '@noble/hashes': 1.3.2
       '@scure/base': 1.1.3
     dev: true
 
@@ -1379,7 +1376,7 @@ packages:
   /@scure/bip39@1.2.1:
     resolution: {integrity: sha512-Z3/Fsz1yr904dduJD0NpiyRHhRYHdcnyh73FZWiV+/qhWi83wNJ3NWolYqCEN+ZWsUz2TWwajJggcRE9r1zUYg==}
     dependencies:
-      '@noble/hashes': 1.3.1
+      '@noble/hashes': 1.3.2
       '@scure/base': 1.1.3
     dev: true
 
@@ -2450,11 +2447,6 @@ packages:
   /commander@4.1.1:
     resolution: {integrity: sha512-NOKm8xhkzAjzFx8B2v5OAHT+u5pRQc2UCa2Vq9jYL/31o2wi9mxBA7LIFs3sV5VSC49z6pEhfbMULvShKj26WA==}
     engines: {node: '>= 6'}
-    dev: true
-
-  /commander@8.3.0:
-    resolution: {integrity: sha512-OkTL9umf+He2DZkUq8f8J9of7yL6RJKI24dVITBmNfZBmri9zYZQrKkuXiKhyfPSu8tUhnVBB1iKXevvnlR4Ww==}
-    engines: {node: '>= 12'}
     dev: true
 
   /concat-map@0.0.1:
@@ -5592,22 +5584,6 @@ packages:
       tmp: 0.0.33
     transitivePeerDependencies:
       - debug
-
-  /solc@0.8.21:
-    resolution: {integrity: sha512-N55ogy2dkTRwiONbj4e6wMZqUNaLZkiRcjGyeafjLYzo/tf/IvhHY5P5wpe+H3Fubh9idu071i8eOGO31s1ylg==}
-    engines: {node: '>=10.0.0'}
-    hasBin: true
-    dependencies:
-      command-exists: 1.2.9
-      commander: 8.3.0
-      follow-redirects: 1.15.3(debug@4.3.4)
-      js-sha3: 0.8.0
-      memorystream: 0.3.1
-      semver: 5.7.2
-      tmp: 0.0.33
-    transitivePeerDependencies:
-      - debug
-    dev: true
 
   /solhint@3.6.2(typescript@5.2.2):
     resolution: {integrity: sha512-85EeLbmkcPwD+3JR7aEMKsVC9YrRSxd4qkXuMzrlf7+z2Eqdfm1wHWq1ffTuo5aDhoZxp2I9yF3QkxZOxOL7aQ==}
