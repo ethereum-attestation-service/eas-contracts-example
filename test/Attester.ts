@@ -1,13 +1,13 @@
-import Contracts from '../components/Contracts';
-import { SchemaRegistry, EAS, ExampleAttester, ExampleUintResolver } from '../typechain-types';
 import { getSchemaUID } from '@ethereum-attestation-service/eas-sdk';
+import Contracts from '../components/Contracts';
+import { Attester, EAS, SchemaRegistry, UintResolver } from '../typechain-types';
 import { expect } from './helpers/Chai';
 
 describe('Example Attester', () => {
   let registry: SchemaRegistry;
   let eas: EAS;
-  let attester: ExampleAttester;
-  let resolver: ExampleUintResolver;
+  let attester: Attester;
+  let resolver: UintResolver;
 
   const schema = 'uint256 value';
   let schemaId: string;
@@ -16,9 +16,9 @@ describe('Example Attester', () => {
     registry = await Contracts.SchemaRegistry.deploy();
     eas = await Contracts.EAS.deploy(await registry.getAddress());
 
-    attester = await Contracts.ExampleAttester.deploy(await eas.getAddress());
+    attester = await Contracts.Attester.deploy(await eas.getAddress());
 
-    resolver = await Contracts.ExampleUintResolver.deploy(await eas.getAddress());
+    resolver = await Contracts.UintResolver.deploy(await eas.getAddress());
 
     await registry.register(schema, await resolver.getAddress(), true);
     schemaId = getSchemaUID(schema, await resolver.getAddress(), true);

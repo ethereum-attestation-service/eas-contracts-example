@@ -1,11 +1,6 @@
 import { ContractFactory, Signer } from 'ethers';
 import { ethers } from 'hardhat';
-import {
-  EAS__factory,
-  ExampleAttester__factory,
-  ExampleUintResolver__factory,
-  SchemaRegistry__factory
-} from '../typechain-types';
+import { Attester__factory, EAS__factory, SchemaRegistry__factory, UintResolver__factory } from '../typechain-types';
 
 export * from '../typechain-types';
 
@@ -68,8 +63,8 @@ const getContracts = (signer?: Signer) => ({
   connect: (signer: Signer) => getContracts(signer),
 
   EAS: deployOrAttach('EAS', EAS__factory, signer),
-  ExampleAttester: deployOrAttach('ExampleAttester', ExampleAttester__factory, signer),
-  ExampleUintResolver: deployOrAttach('ExampleUintResolver', ExampleUintResolver__factory, signer),
+  Attester: deployOrAttach('Attester', Attester__factory, signer),
+  UintResolver: deployOrAttach('UintResolver', UintResolver__factory, signer),
   SchemaRegistry: deployOrAttach('SchemaRegistry', SchemaRegistry__factory, signer)
 });
 /* eslint-enable camelcase */

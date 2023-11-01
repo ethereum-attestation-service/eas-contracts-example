@@ -5,15 +5,15 @@ pragma solidity 0.8.21;
 import { IEAS, AttestationRequest, AttestationRequestData } from "@ethereum-attestation-service/eas-contracts/contracts/IEAS.sol";
 import { NO_EXPIRATION_TIME, EMPTY_UID } from "@ethereum-attestation-service/eas-contracts/contracts/Common.sol";
 
-/// @title ExampleAttester
+/// @title Attester
 /// @notice Ethereum Attestation Service - Example
-contract ExampleAttester {
+contract Attester {
     error InvalidEAS();
 
     // The address of the global EAS contract.
     IEAS private immutable _eas;
 
-    /// @notice Creates a new ExampleAttester instance.
+    /// @notice Creates a new Attester instance.
     /// @param eas The address of the global EAS contract.
     constructor(IEAS eas) {
         if (address(eas) == address(0)) {
