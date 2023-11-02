@@ -1,27 +1,43 @@
-import { getSchemaUID } from '@ethereum-attestation-service/eas-sdk';
+import { SchemaRegistry } from '@ethereum-attestation-service/eas-sdk';
+import { Signer } from 'ethers';
+import { ethers } from 'hardhat';
 import Contracts from '../components/Contracts';
-import { Attester, EAS, LogResolver, SchemaRegistry } from '../typechain-types';
+import {
+  Attester,
+  EAS as EASContract,
+  LogResolver,
+  SchemaRegistry as SchemaRegistryContract
+} from '../typechain-types';
 import { expect } from './helpers/Chai';
 
 describe('Example Attester', () => {
-  let registry: SchemaRegistry;
-  let eas: EAS;
+  let sender: Signer;
+
+  let registryContract: SchemaRegistryContract;
+  let easContract: EASContract;
   let attester: Attester;
   let resolver: LogResolver;
+
+  let registry: SchemaRegistry;
 
   const schema = 'uint256 value';
   let schemaId: string;
 
+  before(async () => {
+    [sender] = await ethers.getSigners();
+  });
+
   beforeEach(async () => {
-    registry = await Contracts.SchemaRegistry.deploy();
-    eas = await Contracts.EAS.deploy(await registry.getAddress());
+    registryContract = await Contracts.SchemaRegistry.deploy();
+    easContract = await Contracts.EAS.deploy(await registryContract.getAddress());
+    attester = await Contracts.Attester.deploy(await easContract.getAddress());
+    resolver = await Contracts.LogResolver.deploy(await easContract.getAddress());
 
-    attester = await Contracts.Attester.deploy(await eas.getAddress());
+    registry = new SchemaRegistry(await registryContract.getAddress(), { signerOrProvider: sender });
 
-    resolver = await Contracts.LogResolver.deploy(await eas.getAddress());
-
-    await registry.register(schema, await resolver.getAddress(), true);
-    schemaId = getSchemaUID(schema, await resolver.getAddress(), true);
+    schemaId = await (
+      await registry.register({ schema, resolverAddress: await resolver.getAddress(), revocable: true })
+    ).wait();
   });
 
   describe('attesting', () => {
