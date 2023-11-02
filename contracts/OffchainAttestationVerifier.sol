@@ -18,7 +18,7 @@ contract OffchainAttestationVerifier is EIP712 {
 
     /// @notice A struct representing an offchain attestation request.
     struct OffchainAttestation {
-        Version version; // The version of the attestation.
+        uint16 version; // The version of the attestation.
         address attester; // The attester of the attestation.
         bytes32 schema; // The unique identifier of the schema.
         address recipient; // The recipient of the attestation.
@@ -30,11 +30,9 @@ contract OffchainAttestationVerifier is EIP712 {
         Signature signature; // The ECDSA signature data.
     }
 
-    /// @notice Offchain attestation versions.
-    enum Version {
-        LEGACY,
-        VERSION_1
-    }
+    // Offchain attestation versions.
+    uint16 private constant LEGACY = 0;
+    uint16 private constant VERSION1 = 1;
 
     // The hash of the data type used to relay calls to the attest function. It's the value of
     // keccak256("Attestation(bytes32 schema,address recipient,uint64 time,uint64 expirationTime,bool revocable,bytes32 refUID,bytes data)").
@@ -50,18 +48,18 @@ contract OffchainAttestationVerifier is EIP712 {
     IEAS private immutable _eas;
 
     // The version of the offchain attestations to verify.
-    Version private immutable _version;
+    uint16 private immutable _version;
 
     /// @notice Creates a new Attester instance.
     /// @param eas The address of the global EAS contract.
     /// @param version The version of offchain attestations to verify.
-    constructor(IEAS eas, Version version) EIP712("EAS Attestation", Strings.toString(uint256(version))) {
+    constructor(IEAS eas, uint16 version) EIP712("EAS Attestation", Strings.toString(uint256(version))) {
         if (address(eas) == address(0)) {
             revert InvalidEAS();
         }
 
         // Verify that the version is known.
-        if (version > Version.VERSION_1) {
+        if (version > VERSION1) {
             revert InvalidVersion();
         }
 
@@ -88,7 +86,7 @@ contract OffchainAttestationVerifier is EIP712 {
         }
 
         // Verify that the version is known.
-        if (attestation.version != _version) {
+        if (uint16(attestation.version) != _version) {
             return false;
         }
 
@@ -113,7 +111,7 @@ contract OffchainAttestationVerifier is EIP712 {
 
         // Derive the right typed data hash based on the offchain attestation version. Please note that due to previous
         // checks, don't need a case for the unknown version below.
-        if (_version == Version.LEGACY) {
+        if (_version == LEGACY) {
             hash = _hashTypedDataV4(
                 keccak256(
                     abi.encode(
@@ -128,7 +126,7 @@ contract OffchainAttestationVerifier is EIP712 {
                     )
                 )
             );
-        } else if (_version == Version.VERSION_1) {
+        } else if (_version == VERSION1) {
             hash = _hashTypedDataV4(
                 keccak256(
                     abi.encode(
