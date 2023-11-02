@@ -3,7 +3,9 @@
 pragma solidity 0.8.22;
 
 import { IEAS } from "@ethereum-attestation-service/eas-contracts/contracts/IEAS.sol";
+import { SchemaRecord } from "@ethereum-attestation-service/eas-contracts/contracts/ISchemaRegistry.sol";
 import { EMPTY_UID, Signature } from "@ethereum-attestation-service/eas-contracts/contracts/Common.sol";
+
 import { SignatureChecker } from "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
 import { EIP712 } from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
@@ -96,7 +98,8 @@ contract OffchainAttestationVerifier is EIP712 {
         }
 
         // Verify that the schema exists.
-        if (_eas.getSchemaRegistry().getSchema(attestation.schema).uid == EMPTY_UID) {
+        SchemaRecord memory schemaRecord = _eas.getSchemaRegistry().getSchema(attestation.schema);
+        if (schemaRecord.uid == EMPTY_UID) {
             return false;
         }
 
