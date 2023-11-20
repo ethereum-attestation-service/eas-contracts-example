@@ -10,7 +10,11 @@ import { SchemaResolver } from "@ethereum-attestation-service/eas-contracts/cont
 contract LogResolver is SchemaResolver {
     /// @notice Emitted to log a uint256 value.
     /// @param value The attested value.
-    event Log(uint256 value);
+    event Attested(uint256 value);
+
+    /// @notice Emitted to log a uint256 value.
+    /// @param value The attested value.
+    event Revoked(uint256 value);
 
     /// @notice Creates a new LogResolver instance.
     constructor(IEAS eas) SchemaResolver(eas) {}
@@ -21,14 +25,18 @@ contract LogResolver is SchemaResolver {
     function onAttest(Attestation calldata attestation, uint256 /*value*/) internal override returns (bool) {
         uint256 value = abi.decode(attestation.data, (uint256));
 
-        emit Log(value);
+        emit Attested(value);
 
         return true;
     }
 
     /// @notice An example resolver onRevoke fallthrough callback (which currently doesn't do anything).
     /// @return Whether the attestation can be revoked.
-    function onRevoke(Attestation calldata /*attestation*/, uint256 /*value*/) internal pure override returns (bool) {
+    function onRevoke(Attestation calldata attestation, uint256 /*value*/) internal override returns (bool) {
+        uint256 value = abi.decode(attestation.data, (uint256));
+
+        emit Revoked(value);
+
         return true;
     }
 }

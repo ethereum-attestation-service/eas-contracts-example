@@ -1,6 +1,7 @@
 import {
   EAS,
   Offchain,
+  OffchainAttestationParams,
   OffChainAttestationVersion,
   SchemaRegistry,
   SignedOffchainAttestation,
@@ -77,11 +78,26 @@ describe('OffchainAttestationVerifier', () => {
     let verifier: OffchainAttestationVerifier;
     let attestation: SignedOffchainAttestation;
 
-    const verify = async (attestation: SignedOffchainAttestation): Promise<boolean> =>
+    interface Signature {
+      r: string;
+      s: string;
+      v: number;
+    }
+
+    interface VerifyOptions {
+      attester?: string;
+      message?: Partial<OffchainAttestationParams>;
+      signature?: Signature;
+    }
+
+    const verify = async (
+      attestation: SignedOffchainAttestation,
+      { attester, message, signature }: VerifyOptions = {}
+    ): Promise<boolean> =>
       verifier.verify.staticCall({
-        attester: await sender.getAddress(),
-        ...attestation.message,
-        signature: attestation.signature
+        attester: attester ?? (await sender.getAddress()),
+        ...{ ...attestation.message, ...(message ?? {}) },
+        signature: { ...attestation.signature, ...(signature ?? {}) }
       });
 
     for (const version of [OffChainAttestationVersion.Legacy, OffChainAttestationVersion.Version1]) {
@@ -119,54 +135,33 @@ describe('OffchainAttestationVerifier', () => {
           expect(await verify(attestation)).to.be.true;
         });
 
-        context('witn an incompatible version', () => {
-          beforeEach(() => {
-            attestation.message.version = OffChainAttestationVersion.Version1 + 1000;
-          });
-
-          it('should revert', async () => {
-            expect(await verify(attestation)).to.be.false;
-          });
+        it('should revert when attempting to verify with an invalid attester', async () => {
+          expect(await verify(attestation, { attester: ZERO_ADDRESS })).to.be.false;
         });
 
-        context('with an invalid time', () => {
-          beforeEach(async () => {
-            attestation.message.time = (await latest()) + duration.years(1n);
-          });
-
-          it('should revert', async () => {
-            expect(await verify(attestation)).to.be.false;
-          });
+        it('should revert when attempting to verify with an incompatible version', async () => {
+          expect(await verify(attestation, { message: { version: OffChainAttestationVersion.Version1 + 1000 } })).to.be
+            .false;
         });
 
-        context('with an invalid schema', () => {
-          beforeEach(() => {
-            attestation.message.schema = ZERO_BYTES32;
-          });
-
-          it('should revert', async () => {
-            expect(await verify(attestation)).to.be.false;
-          });
+        it('should revert when attempting to verify with an invalid time', async () => {
+          expect(await verify(attestation, { message: { time: (await latest()) + duration.years(1n) } })).to.be.false;
         });
 
-        context('with an invalid referenced attestation', () => {
-          beforeEach(() => {
-            attestation.message.refUID = encodeBytes32String('BAD');
-          });
-
-          it('should revert', async () => {
-            expect(await verify(attestation)).to.be.false;
-          });
+        it('should revert when attempting to verify with an invalid schema', async () => {
+          expect(await verify(attestation, { message: { schema: ZERO_BYTES32 } })).to.be.false;
         });
 
-        context('with an invalid signature', () => {
-          beforeEach(() => {
-            attestation.signature.s = encodeBytes32String('BAD');
-          });
+        it('should revert when attempting to verify with an invalid referenced attestation', async () => {
+          expect(await verify(attestation, { message: { refUID: encodeBytes32String('BAD') } })).to.be.false;
+        });
 
-          it('should revert', async () => {
-            expect(await verify(attestation)).to.be.false;
-          });
+        it('should revert when attempting to verify with an invalid signature', async () => {
+          expect(
+            await verify(attestation, {
+              signature: { r: encodeBytes32String('BAD'), s: attestation.signature.s, v: attestation.signature.v }
+            })
+          ).to.be.false;
         });
       });
     }

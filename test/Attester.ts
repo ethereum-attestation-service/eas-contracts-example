@@ -1,4 +1,4 @@
-import { SchemaRegistry } from '@ethereum-attestation-service/eas-sdk';
+import { getUIDFromAttestTx, SchemaRegistry } from '@ethereum-attestation-service/eas-sdk';
 import { Signer } from 'ethers';
 import { ethers } from 'hardhat';
 import Contracts from '../components/Contracts';
@@ -8,6 +8,7 @@ import {
   LogResolver,
   SchemaRegistry as SchemaRegistryContract
 } from '../typechain-types';
+import { ZERO_ADDRESS } from '../utils/Constants';
 import { expect } from './helpers/chai';
 
 describe('Example Attester', () => {
@@ -40,11 +41,33 @@ describe('Example Attester', () => {
     ).wait();
   });
 
-  describe('attesting', () => {
+  describe('construction', () => {
+    it('should revert when initialized with an invalid EAS', async () => {
+      await expect(Contracts.Attester.deploy(ZERO_ADDRESS)).to.be.revertedWithCustomError(attester, 'InvalidEAS');
+    });
+  });
+
+  describe('attestation', () => {
+    const value = 123456n;
+
     it('should log the attested value', async () => {
-      const value = 123456n;
-      const res = await attester.attestUint(schemaId, value);
-      await expect(res).to.emit(resolver, 'Log').withArgs(value);
+      const res = await attester.attest(schemaId, value);
+      await expect(res).to.emit(resolver, 'Attested').withArgs(value);
+    });
+  });
+
+  describe('revocation', () => {
+    let uid: string;
+    const value = 999n;
+
+    beforeEach(async () => {
+      const res = await attester.attest(schemaId, value);
+      uid = await getUIDFromAttestTx(res);
+    });
+
+    it('should handle revoke', async () => {
+      const res = await attester.revoke(schemaId, uid);
+      await expect(res).to.emit(resolver, 'Revoked').withArgs(value);
     });
   });
 });

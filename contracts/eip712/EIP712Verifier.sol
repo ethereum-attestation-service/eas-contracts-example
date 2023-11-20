@@ -47,9 +47,9 @@ abstract contract EIP712Verifier {
     function _domainSeparatorV4() internal view returns (bytes32) {
         if (address(this) == _cachedThis && block.chainid == _cachedChainId) {
             return _cachedDomainSeparator;
-        } else {
-            return _buildDomainSeparator();
         }
+
+        return _buildDomainSeparator();
     }
 
     /// @dev Builds the domain separator for the current chain and for a specific target.

@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.22;
 
-import { IEAS, AttestationRequest, AttestationRequestData } from "@ethereum-attestation-service/eas-contracts/contracts/IEAS.sol";
+import { IEAS, AttestationRequest, AttestationRequestData, RevocationRequest, RevocationRequestData } from "@ethereum-attestation-service/eas-contracts/contracts/IEAS.sol";
 import { NO_EXPIRATION_TIME, EMPTY_UID } from "@ethereum-attestation-service/eas-contracts/contracts/Common.sol";
 
 /// @title Attester
@@ -27,7 +27,7 @@ contract Attester {
     /// @param schema The schema UID to attest to.
     /// @param input The uint256 value to pass to to the resolver.
     /// @return The UID of the new attestation.
-    function attestUint(bytes32 schema, uint256 input) external returns (bytes32) {
+    function attest(bytes32 schema, uint256 input) external returns (bytes32) {
         return
             _eas.attest(
                 AttestationRequest({
@@ -42,5 +42,12 @@ contract Attester {
                     })
                 })
             );
+    }
+
+    /// @notice Revokes an attestation of a schema that receives a uint256 parameter.
+    /// @param schema The schema UID to attest to.
+    /// @param uid The UID of the attestation to revoke.
+    function revoke(bytes32 schema, bytes32 uid) external {
+        _eas.revoke(RevocationRequest({ schema: schema, data: RevocationRequestData({ uid: uid, value: 0 }) }));
     }
 }
