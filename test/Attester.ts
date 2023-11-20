@@ -8,7 +8,7 @@ import {
   LogResolver,
   SchemaRegistry as SchemaRegistryContract
 } from '../typechain-types';
-import { expect } from './helpers/Chai';
+import { expect } from './helpers/chai';
 
 describe('Example Attester', () => {
   let sender: Signer;

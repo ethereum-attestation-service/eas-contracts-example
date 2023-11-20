@@ -7,12 +7,13 @@ import { SchemaRecord } from "@ethereum-attestation-service/eas-contracts/contra
 import { EMPTY_UID, Signature } from "@ethereum-attestation-service/eas-contracts/contracts/Common.sol";
 
 import { SignatureChecker } from "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
-import { EIP712 } from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
+
+import { EIP712Verifier } from "./eip712/EIP712Verifier.sol";
 
 /// @title OffchainAttestationVerifier
 /// @notice Offchain Attestation Verifier - Example
-contract OffchainAttestationVerifier is EIP712 {
+contract OffchainAttestationVerifier is EIP712Verifier {
     error InvalidEAS();
     error InvalidVersion();
 
@@ -53,7 +54,7 @@ contract OffchainAttestationVerifier is EIP712 {
     /// @notice Creates a new Attester instance.
     /// @param eas The address of the global EAS contract.
     /// @param version The version of offchain attestations to verify.
-    constructor(IEAS eas, uint16 version) EIP712("EAS Attestation", Strings.toString(uint256(version))) {
+    constructor(IEAS eas, uint16 version) EIP712Verifier("EAS Attestation", eas.version(), address(eas)) {
         if (address(eas) == address(0)) {
             revert InvalidEAS();
         }

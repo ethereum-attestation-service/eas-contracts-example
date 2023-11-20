@@ -1,4 +1,11 @@
-import { OffChainAttestationVersion, SchemaRegistry, ZERO_ADDRESS } from '@ethereum-attestation-service/eas-sdk';
+import {
+  EAS,
+  Offchain,
+  OffChainAttestationVersion,
+  SchemaRegistry,
+  SignedOffchainAttestation,
+  ZERO_ADDRESS
+} from '@ethereum-attestation-service/eas-sdk';
 import { Signer } from 'ethers';
 import { ethers } from 'hardhat';
 import Contracts from '../components/Contracts';
@@ -7,10 +14,13 @@ import {
   OffchainAttestationVerifier,
   SchemaRegistry as SchemaRegistryContract
 } from '../typechain-types';
-import { expect } from './helpers/Chai';
+import { HARDHAT_CHAIN_ID, NO_EXPIRATION, ZERO_BYTES, ZERO_BYTES32 } from '../utils/Constants';
+import { expect } from './helpers/chai';
+import { latest } from './helpers/time';
 
 describe('OffchainAttestationVerifier', () => {
   let sender: Signer;
+  let recipient: Signer;
 
   let registryContract: SchemaRegistryContract;
   let easContract: EASContract;
@@ -21,7 +31,7 @@ describe('OffchainAttestationVerifier', () => {
   let schemaId: string;
 
   before(async () => {
-    [sender] = await ethers.getSigners();
+    [sender, recipient] = await ethers.getSigners();
   });
 
   beforeEach(async () => {
@@ -59,5 +69,55 @@ describe('OffchainAttestationVerifier', () => {
       expect(await verifier.getEAS()).to.equal(await easContract.getAddress());
       expect(await verifier.getVersion()).to.equal(OffChainAttestationVersion.Version1);
     });
+  });
+
+  describe('verification', () => {
+    let eas: EAS;
+    let offchain: Offchain;
+    let verifier: OffchainAttestationVerifier;
+    let attestation: SignedOffchainAttestation;
+
+    for (const version of [OffChainAttestationVersion.Legacy, OffChainAttestationVersion.Version1]) {
+      context(`version ${version}`, () => {
+        beforeEach(async () => {
+          eas = new EAS(await easContract.getAddress(), { signerOrProvider: ethers.provider });
+          offchain = new Offchain(
+            {
+              address: await easContract.getAddress(),
+              version: await eas.getVersion(),
+              chainId: HARDHAT_CHAIN_ID
+            },
+            version,
+            eas
+          );
+
+          verifier = await Contracts.OffchainAttestationVerifier.deploy(await easContract.getAddress(), version);
+
+          attestation = await offchain.signOffchainAttestation(
+            {
+              version,
+              schema: schemaId,
+              recipient: await recipient.getAddress(),
+              time: await latest(),
+              expirationTime: NO_EXPIRATION,
+              revocable: false,
+              refUID: ZERO_BYTES32,
+              data: ZERO_BYTES
+            },
+            sender
+          );
+        });
+
+        it('should verify', async () => {
+          expect(
+            await verifier.verify.staticCall({
+              attester: await sender.getAddress(),
+              ...attestation.message,
+              signature: attestation.signature
+            })
+          ).to.be.true;
+        });
+      });
+    }
   });
 });
