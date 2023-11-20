@@ -6,7 +6,7 @@ import {
   SignedOffchainAttestation,
   ZERO_ADDRESS
 } from '@ethereum-attestation-service/eas-sdk';
-import { Signer } from 'ethers';
+import { encodeBytes32String, Signer } from 'ethers';
 import { ethers } from 'hardhat';
 import Contracts from '../components/Contracts';
 import {
@@ -16,7 +16,7 @@ import {
 } from '../typechain-types';
 import { HARDHAT_CHAIN_ID, NO_EXPIRATION, ZERO_BYTES, ZERO_BYTES32 } from '../utils/Constants';
 import { expect } from './helpers/chai';
-import { latest } from './helpers/time';
+import { duration, latest } from './helpers/time';
 
 describe('OffchainAttestationVerifier', () => {
   let sender: Signer;
@@ -56,7 +56,7 @@ describe('OffchainAttestationVerifier', () => {
     it('should revert when initialized with an invalid EAS', async () => {
       await expect(
         Contracts.OffchainAttestationVerifier.deploy(ZERO_ADDRESS, OffChainAttestationVersion.Version1)
-      ).to.be.revertedWithCustomError(verifier, 'InvalidEAS');
+      ).to.be.revertedWithoutReason();
     });
 
     it('should revert when initialized with an invalid version', async () => {
@@ -76,6 +76,13 @@ describe('OffchainAttestationVerifier', () => {
     let offchain: Offchain;
     let verifier: OffchainAttestationVerifier;
     let attestation: SignedOffchainAttestation;
+
+    const verify = async (attestation: SignedOffchainAttestation): Promise<boolean> =>
+      verifier.verify.staticCall({
+        attester: await sender.getAddress(),
+        ...attestation.message,
+        signature: attestation.signature
+      });
 
     for (const version of [OffChainAttestationVersion.Legacy, OffChainAttestationVersion.Version1]) {
       context(`version ${version}`, () => {
@@ -109,13 +116,57 @@ describe('OffchainAttestationVerifier', () => {
         });
 
         it('should verify', async () => {
-          expect(
-            await verifier.verify.staticCall({
-              attester: await sender.getAddress(),
-              ...attestation.message,
-              signature: attestation.signature
-            })
-          ).to.be.true;
+          expect(await verify(attestation)).to.be.true;
+        });
+
+        context('witn an incompatible version', () => {
+          beforeEach(() => {
+            attestation.message.version = OffChainAttestationVersion.Version1 + 1000;
+          });
+
+          it('should revert', async () => {
+            expect(await verify(attestation)).to.be.false;
+          });
+        });
+
+        context('with an invalid time', () => {
+          beforeEach(async () => {
+            attestation.message.time = (await latest()) + duration.years(1n);
+          });
+
+          it('should revert', async () => {
+            expect(await verify(attestation)).to.be.false;
+          });
+        });
+
+        context('with an invalid schema', () => {
+          beforeEach(() => {
+            attestation.message.schema = ZERO_BYTES32;
+          });
+
+          it('should revert', async () => {
+            expect(await verify(attestation)).to.be.false;
+          });
+        });
+
+        context('with an invalid referenced attestation', () => {
+          beforeEach(() => {
+            attestation.message.refUID = encodeBytes32String('BAD');
+          });
+
+          it('should revert', async () => {
+            expect(await verify(attestation)).to.be.false;
+          });
+        });
+
+        context('with an invalid signature', () => {
+          beforeEach(() => {
+            attestation.signature.s = encodeBytes32String('BAD');
+          });
+
+          it('should revert', async () => {
+            expect(await verify(attestation)).to.be.false;
+          });
         });
       });
     }

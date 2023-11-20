@@ -14,7 +14,6 @@ import { EIP712Verifier } from "./eip712/EIP712Verifier.sol";
 /// @title OffchainAttestationVerifier
 /// @notice Offchain Attestation Verifier - Example
 contract OffchainAttestationVerifier is EIP712Verifier {
-    error InvalidEAS();
     error InvalidVersion();
 
     /// @notice A struct representing an offchain attestation request.
@@ -55,10 +54,6 @@ contract OffchainAttestationVerifier is EIP712Verifier {
     /// @param eas The address of the global EAS contract.
     /// @param version The version of offchain attestations to verify.
     constructor(IEAS eas, uint16 version) EIP712Verifier("EAS Attestation", eas.version(), address(eas)) {
-        if (address(eas) == address(0)) {
-            revert InvalidEAS();
-        }
-
         // Verify that the version is known.
         if (version > VERSION1) {
             revert InvalidVersion();
