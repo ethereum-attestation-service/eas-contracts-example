@@ -26,15 +26,13 @@ abstract contract EIP712Verifier {
 
     ShortString private immutable _name;
     ShortString private immutable _version;
-    string private _nameFallback;
-    string private _versionFallback;
 
     /// @dev Initializes the domain separator and parameter caches.
     constructor(string memory name, string memory version, address target) {
         _target = target;
 
-        _name = name.toShortStringWithFallback(_nameFallback);
-        _version = version.toShortStringWithFallback(_versionFallback);
+        _name = name.toShortString();
+        _version = version.toShortString();
         _hashedName = keccak256(bytes(name));
         _hashedVersion = keccak256(bytes(version));
 

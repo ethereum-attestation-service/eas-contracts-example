@@ -14,8 +14,6 @@ import { EIP712Verifier } from "./eip712/EIP712Verifier.sol";
 /// @title OffchainAttestationVerifier
 /// @notice Offchain Attestation Verifier - Example
 contract OffchainAttestationVerifier is EIP712Verifier {
-    error InvalidVersion();
-
     /// @notice A struct representing an offchain attestation request.
     struct OffchainAttestation {
         uint16 version; // The version of the attestation.
@@ -47,30 +45,15 @@ contract OffchainAttestationVerifier is EIP712Verifier {
     // The address of the global EAS contract.
     IEAS private immutable _eas;
 
-    // The version of the offchain attestations to verify.
-    uint16 private immutable _version;
-
     /// @notice Creates a new Attester instance.
     /// @param eas The address of the global EAS contract.
-    /// @param version The version of offchain attestations to verify.
-    constructor(IEAS eas, uint16 version) EIP712Verifier("EAS Attestation", eas.version(), address(eas)) {
-        // Verify that the version is known.
-        if (version > VERSION1) {
-            revert InvalidVersion();
-        }
-
+    constructor(IEAS eas) EIP712Verifier("EAS Attestation", eas.version(), address(eas)) {
         _eas = eas;
-        _version = version;
     }
 
     /// @notice Returns the EAS.
     function getEAS() external view returns (IEAS) {
         return _eas;
-    }
-
-    /// @notice Returns the version of the offchain attestations to verify.
-    function getVersion() external view returns (uint16) {
-        return uint16(_version);
     }
 
     /// @notice Verify the offchain attestation.
@@ -82,7 +65,8 @@ contract OffchainAttestationVerifier is EIP712Verifier {
         }
 
         // Verify that the version is known.
-        if (uint16(attestation.version) != _version) {
+        uint16 version = attestation.version;
+        if (version > VERSION1) {
             return false;
         }
 
@@ -107,37 +91,10 @@ contract OffchainAttestationVerifier is EIP712Verifier {
 
         // Derive the right typed data hash based on the offchain attestation version. Please note that due to previous
         // checks, don't need a case for the unknown version below.
-        if (_version == LEGACY) {
-            hash = _hashTypedDataV4(
-                keccak256(
-                    abi.encode(
-                        LEGACY_ATTEST_TYPEHASH,
-                        attestation.schema,
-                        attestation.recipient,
-                        attestation.time,
-                        attestation.expirationTime,
-                        attestation.revocable,
-                        attestation.refUID,
-                        keccak256(attestation.data)
-                    )
-                )
-            );
-        } else if (_version == VERSION1) {
-            hash = _hashTypedDataV4(
-                keccak256(
-                    abi.encode(
-                        VERSION1_ATTEST_TYPEHASH,
-                        uint16(_version),
-                        attestation.schema,
-                        attestation.recipient,
-                        attestation.time,
-                        attestation.expirationTime,
-                        attestation.revocable,
-                        attestation.refUID,
-                        keccak256(attestation.data)
-                    )
-                )
-            );
+        if (version == LEGACY) {
+            hash = _hashTypedDataLegacy(attestation);
+        } else if (version == VERSION1) {
+            hash = _hashTypedDataVersion1(attestation);
         }
 
         Signature memory signature = attestation.signature;
@@ -152,6 +109,49 @@ contract OffchainAttestationVerifier is EIP712Verifier {
         }
 
         return true;
+    }
+
+    /// @dev Returns the legacy (version 0) attestation typed data hash
+    /// @param attestation The offchain attestation to verify.
+    /// @return The typed data hash.
+    function _hashTypedDataLegacy(OffchainAttestation calldata attestation) private view returns (bytes32) {
+        return
+            _hashTypedDataV4(
+                keccak256(
+                    abi.encode(
+                        LEGACY_ATTEST_TYPEHASH,
+                        attestation.schema,
+                        attestation.recipient,
+                        attestation.time,
+                        attestation.expirationTime,
+                        attestation.revocable,
+                        attestation.refUID,
+                        keccak256(attestation.data)
+                    )
+                )
+            );
+    }
+
+    /// @dev Returns the legacy (version 0) attestation typed data hash
+    /// @param attestation The offchain attestation to verify.
+    /// @return The typed data hash.
+    function _hashTypedDataVersion1(OffchainAttestation calldata attestation) private view returns (bytes32) {
+        return
+            _hashTypedDataV4(
+                keccak256(
+                    abi.encode(
+                        VERSION1_ATTEST_TYPEHASH,
+                        VERSION1,
+                        attestation.schema,
+                        attestation.recipient,
+                        attestation.time,
+                        attestation.expirationTime,
+                        attestation.revocable,
+                        attestation.refUID,
+                        keccak256(attestation.data)
+                    )
+                )
+            );
     }
 
     /// @dev Returns the current's block timestamp. This method is overridden during tests and used to simulate the

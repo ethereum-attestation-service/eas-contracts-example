@@ -48,27 +48,15 @@ describe('OffchainAttestationVerifier', () => {
     let verifier: OffchainAttestationVerifier;
 
     beforeEach(async () => {
-      verifier = await Contracts.OffchainAttestationVerifier.deploy(
-        await easContract.getAddress(),
-        OffChainAttestationVersion.Version1
-      );
+      verifier = await Contracts.OffchainAttestationVerifier.deploy(await easContract.getAddress());
     });
 
     it('should revert when initialized with an invalid EAS', async () => {
-      await expect(
-        Contracts.OffchainAttestationVerifier.deploy(ZERO_ADDRESS, OffChainAttestationVersion.Version1)
-      ).to.be.revertedWithoutReason();
-    });
-
-    it('should revert when initialized with an invalid version', async () => {
-      await expect(
-        Contracts.OffchainAttestationVerifier.deploy(await easContract.getAddress(), 255n)
-      ).to.be.revertedWithCustomError(verifier, 'InvalidVersion');
+      await expect(Contracts.OffchainAttestationVerifier.deploy(ZERO_ADDRESS)).to.be.revertedWithoutReason();
     });
 
     it('should be properly initialized', async () => {
       expect(await verifier.getEAS()).to.equal(await easContract.getAddress());
-      expect(await verifier.getVersion()).to.equal(OffChainAttestationVersion.Version1);
     });
   });
 
@@ -114,7 +102,7 @@ describe('OffchainAttestationVerifier', () => {
             eas
           );
 
-          verifier = await Contracts.OffchainAttestationVerifier.deploy(await easContract.getAddress(), version);
+          verifier = await Contracts.OffchainAttestationVerifier.deploy(await easContract.getAddress());
 
           attestation = await offchain.signOffchainAttestation(
             {
