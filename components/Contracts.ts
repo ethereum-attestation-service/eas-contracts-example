@@ -1,9 +1,10 @@
 import { ContractFactory, Signer } from 'ethers';
 import { ethers } from 'hardhat';
 import {
+  Attester__factory,
   EAS__factory,
-  ExampleAttester__factory,
-  ExampleUintResolver__factory,
+  LogResolver__factory,
+  OffchainAttestationVerifier__factory,
   SchemaRegistry__factory
 } from '../typechain-types';
 
@@ -12,14 +13,13 @@ export * from '../typechain-types';
 type AsyncReturnType<T extends (...args: any) => any> = T extends (...args: any) => Promise<infer U>
   ? U
   : T extends (...args: any) => infer U
-  ? U
-  : any;
+    ? U
+    : any;
 
 type Contract<F extends ContractFactory> = AsyncReturnType<F['deploy']>;
 
 export interface ContractBuilder<F extends ContractFactory> {
   metadata: {
-    contractName: string;
     bytecode: string;
   };
   deploy(...args: Parameters<F['deploy']>): Promise<Contract<F>>;
@@ -33,13 +33,11 @@ export type FactoryConstructor<F extends ContractFactory> = {
 };
 
 export const deployOrAttach = <F extends ContractFactory>(
-  contractName: string,
   FactoryConstructor: FactoryConstructor<F>,
   initialSigner?: Signer
 ): ContractBuilder<F> => {
   return {
     metadata: {
-      contractName,
       bytecode: FactoryConstructor.bytecode
     },
     deploy: async (...args: Parameters<F['deploy']>): Promise<Contract<F>> => {
@@ -67,10 +65,11 @@ export const attachOnly = <F extends ContractFactory>(
 const getContracts = (signer?: Signer) => ({
   connect: (signer: Signer) => getContracts(signer),
 
-  EAS: deployOrAttach('EAS', EAS__factory, signer),
-  ExampleAttester: deployOrAttach('ExampleAttester', ExampleAttester__factory, signer),
-  ExampleUintResolver: deployOrAttach('ExampleUintResolver', ExampleUintResolver__factory, signer),
-  SchemaRegistry: deployOrAttach('SchemaRegistry', SchemaRegistry__factory, signer)
+  EAS: deployOrAttach(EAS__factory, signer),
+  Attester: deployOrAttach(Attester__factory, signer),
+  LogResolver: deployOrAttach(LogResolver__factory, signer),
+  OffchainAttestationVerifier: deployOrAttach(OffchainAttestationVerifier__factory, signer),
+  SchemaRegistry: deployOrAttach(SchemaRegistry__factory, signer)
 });
 /* eslint-enable camelcase */
 
