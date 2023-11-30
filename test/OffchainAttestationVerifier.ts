@@ -4,6 +4,7 @@ import {
   OffchainAttestationParams,
   OffChainAttestationVersion,
   SchemaRegistry,
+  Signature,
   SignedOffchainAttestation,
   ZERO_ADDRESS
 } from '@ethereum-attestation-service/eas-sdk';
@@ -65,13 +66,6 @@ describe('OffchainAttestationVerifier', () => {
     let offchain: Offchain;
     let verifier: OffchainAttestationVerifier;
     let attestation: SignedOffchainAttestation;
-
-    interface Signature {
-      r: string;
-      s: string;
-      v: number;
-    }
-
     interface VerifyOptions {
       attester?: string;
       message?: Partial<OffchainAttestationParams>;
