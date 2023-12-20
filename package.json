@@ -33,11 +33,11 @@
     "clean": "rm -rf artifacts cache dist coverage typechain-types out"
   },
   "dependencies": {
-    "@ethereum-attestation-service/eas-contracts": "1.3.3",
-    "hardhat": "2.19.1"
+    "@ethereum-attestation-service/eas-contracts": "1.3.7",
+    "hardhat": "2.19.3"
   },
   "devDependencies": {
-    "@ethereum-attestation-service/eas-sdk": "1.3.6",
+    "@ethereum-attestation-service/eas-sdk": "1.3.7",
     "@ethersproject/hardware-wallets": "^5.7.0",
     "@ianvs/prettier-plugin-sort-imports": "^4.1.1",
     "@nomicfoundation/hardhat-ethers": "^3.0.5",
@@ -48,28 +48,28 @@
     "@types/chai": "^4.3.11",
     "@types/chance": "^1.1.6",
     "@types/mocha": "^10.0.6",
-    "@types/node": "^20.10.1",
-    "@typescript-eslint/eslint-plugin": "^6.13.1",
-    "@typescript-eslint/parser": "^6.13.1",
+    "@types/node": "^20.10.5",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
     "chai-bigint": "^0.2.0",
     "decimal.js": "^10.4.3",
-    "eslint": "^8.54.0",
-    "eslint-config-prettier": "^9.0.0",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
     "eslint-config-standard": "^17.1.0",
-    "eslint-plugin-import": "^2.29.0",
-    "eslint-plugin-n": "^16.3.1",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-n": "^16.4.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^6.1.1",
     "ethers": "^6.9.0",
     "glob": "^10.3.10",
     "hardhat-dependency-compiler": "^1.1.3",
     "mocha": "^10.2.0",
-    "prettier": "^3.1.0",
+    "prettier": "^3.1.1",
     "prettier-package-json": "^2.8.0",
     "prettier-plugin-solidity": "^1.2.0",
     "solc": "^0.8.23",
     "solhint": "^4.0.0",
-    "ts-node": "^10.9.1",
-    "typescript": "^5.3.2"
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
   }
 }
