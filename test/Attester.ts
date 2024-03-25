@@ -34,7 +34,7 @@ describe('Example Attester', () => {
     attester = await Contracts.Attester.deploy(await easContract.getAddress());
     resolver = await Contracts.LogResolver.deploy(await easContract.getAddress());
 
-    registry = new SchemaRegistry(await registryContract.getAddress(), { signerOrProvider: sender });
+    registry = new SchemaRegistry(await registryContract.getAddress(), { signer: sender });
 
     schemaId = await (
       await registry.register({ schema, resolverAddress: await resolver.getAddress(), revocable: true })

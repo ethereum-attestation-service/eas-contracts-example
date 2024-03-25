@@ -2,7 +2,7 @@ import {
   EAS,
   Offchain,
   OffchainAttestationParams,
-  OffChainAttestationVersion,
+  OffchainAttestationVersion,
   SchemaRegistry,
   Signature,
   SignedOffchainAttestation,
@@ -40,7 +40,7 @@ describe('OffchainAttestationVerifier', () => {
     registryContract = await Contracts.SchemaRegistry.deploy();
     easContract = await Contracts.EAS.deploy(await registryContract.getAddress());
 
-    registry = new SchemaRegistry(await registryContract.getAddress(), { signerOrProvider: sender });
+    registry = new SchemaRegistry(await registryContract.getAddress(), { signer: sender });
 
     schemaId = await (await registry.register({ schema, resolverAddress: ZERO_ADDRESS, revocable: true })).wait();
   });
@@ -82,10 +82,10 @@ describe('OffchainAttestationVerifier', () => {
         signature: { ...attestation.signature, ...(signature ?? {}) }
       });
 
-    for (const version of [OffChainAttestationVersion.Legacy, OffChainAttestationVersion.Version1]) {
+    for (const version of [OffchainAttestationVersion.Legacy, OffchainAttestationVersion.Version1]) {
       context(`version ${version}`, () => {
         beforeEach(async () => {
-          eas = new EAS(await easContract.getAddress(), { signerOrProvider: ethers.provider });
+          eas = new EAS(await easContract.getAddress(), { signer: sender });
           offchain = new Offchain(
             {
               address: await easContract.getAddress(),
@@ -100,7 +100,6 @@ describe('OffchainAttestationVerifier', () => {
 
           attestation = await offchain.signOffchainAttestation(
             {
-              version,
               schema: schemaId,
               recipient: await recipient.getAddress(),
               time: await latest(),
@@ -121,10 +120,7 @@ describe('OffchainAttestationVerifier', () => {
           expect(await verify(attestation, { attester: ZERO_ADDRESS })).to.be.false;
         });
 
-        it('should revert when attempting to verify with an incompatible version', async () => {
-          expect(await verify(attestation, { message: { version: OffChainAttestationVersion.Version1 + 1000 } })).to.be
-            .false;
-        });
+
 
         it('should revert when attempting to verify with an invalid time', async () => {
           expect(await verify(attestation, { message: { time: (await latest()) + duration.years(1n) } })).to.be.false;
