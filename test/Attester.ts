@@ -1,4 +1,5 @@
 import { getUIDFromAttestTx, SchemaRegistry } from '@ethereum-attestation-service/eas-sdk';
+import { expect } from 'chai';
 import { Signer } from 'ethers';
 import { ethers } from 'hardhat';
 import Contracts from '../components/Contracts';
@@ -9,7 +10,6 @@ import {
   SchemaRegistry as SchemaRegistryContract
 } from '../typechain-types';
 import { ZERO_ADDRESS } from '../utils/Constants';
-import { expect } from './helpers/chai';
 
 describe('Example Attester', () => {
   let sender: Signer;

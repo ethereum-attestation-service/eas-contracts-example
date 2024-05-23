@@ -8,6 +8,7 @@ import {
   SignedOffchainAttestation,
   ZERO_ADDRESS
 } from '@ethereum-attestation-service/eas-sdk';
+import { expect } from 'chai';
 import { encodeBytes32String, Signer } from 'ethers';
 import { ethers } from 'hardhat';
 import Contracts from '../components/Contracts';
@@ -17,7 +18,6 @@ import {
   SchemaRegistry as SchemaRegistryContract
 } from '../typechain-types';
 import { HARDHAT_CHAIN_ID, NO_EXPIRATION, ZERO_BYTES, ZERO_BYTES32 } from '../utils/Constants';
-import { expect } from './helpers/chai';
 import { duration, latest } from './helpers/time';
 
 describe('OffchainAttestationVerifier', () => {
@@ -119,8 +119,6 @@ describe('OffchainAttestationVerifier', () => {
         it('should revert when attempting to verify with an invalid attester', async () => {
           expect(await verify(attestation, { attester: ZERO_ADDRESS })).to.be.false;
         });
-
-
 
         it('should revert when attempting to verify with an invalid time', async () => {
           expect(await verify(attestation, { message: { time: (await latest()) + duration.years(1n) } })).to.be.false;

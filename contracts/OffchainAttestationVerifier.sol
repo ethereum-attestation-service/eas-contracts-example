@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.25;
+pragma solidity 0.8.26;
 
 import { IEAS } from "@ethereum-attestation-service/eas-contracts/contracts/IEAS.sol";
 import { SchemaRecord } from "@ethereum-attestation-service/eas-contracts/contracts/ISchemaRegistry.sol";
 import { EMPTY_UID, Signature } from "@ethereum-attestation-service/eas-contracts/contracts/Common.sol";
 
 import { SignatureChecker } from "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
-import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
 
 import { EIP712Verifier } from "./eip712/EIP712Verifier.sol";
 

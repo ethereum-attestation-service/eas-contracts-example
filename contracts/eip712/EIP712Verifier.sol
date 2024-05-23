@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.25;
+pragma solidity 0.8.26;
 
-import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import { MessageHashUtils } from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import { ShortString, ShortStrings } from "@openzeppelin/contracts/utils/ShortStrings.sol";
 
 /// @title EIP712Verifier
@@ -59,6 +59,6 @@ abstract contract EIP712Verifier {
     /// domain.
     /// @param structHash The hashed struct to verify.
     function _hashTypedDataV4(bytes32 structHash) internal view virtual returns (bytes32) {
-        return ECDSA.toTypedDataHash(_domainSeparatorV4(), structHash);
+        return MessageHashUtils.toTypedDataHash(_domainSeparatorV4(), structHash);
     }
 }
