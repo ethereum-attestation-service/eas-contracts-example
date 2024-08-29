@@ -75,14 +75,26 @@ describe('OffchainAttestationVerifier', () => {
     const verify = async (
       attestation: SignedOffchainAttestation,
       { attester, message, signature }: VerifyOptions = {}
-    ): Promise<boolean> =>
-      verifier.verify.staticCall({
+    ): Promise<boolean> => {
+      switch (attestation.version) {
+        case OffchainAttestationVersion.Legacy:
+        case OffchainAttestationVersion.Version1:
+          attestation.message.salt = ZERO_BYTES32;
+          break;
+      }
+
+      return verifier.verify.staticCall({
         attester: attester ?? (await sender.getAddress()),
         ...{ ...attestation.message, ...(message ?? {}) },
         signature: { ...attestation.signature, ...(signature ?? {}) }
       });
+    };
 
-    for (const version of [OffchainAttestationVersion.Legacy, OffchainAttestationVersion.Version1]) {
+    for (const version of [
+      OffchainAttestationVersion.Legacy,
+      OffchainAttestationVersion.Version1,
+      OffchainAttestationVersion.Version2
+    ]) {
       context(`version ${version}`, () => {
         beforeEach(async () => {
           eas = new EAS(await easContract.getAddress(), { signer: sender });

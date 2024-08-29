@@ -24,12 +24,14 @@ contract OffchainAttestationVerifier is EIP712Verifier {
         bool revocable; // Whether the attestation is revocable.
         bytes32 refUID; // The UID of the related attestation.
         bytes data; // Custom attestation data.
+        bytes32 salt; // Custom salt.
         Signature signature; // The ECDSA signature data.
     }
 
     // Offchain attestation versions.
     uint16 private constant LEGACY = 0;
     uint16 private constant VERSION1 = 1;
+    uint16 private constant VERSION2 = 2;
 
     // The hash of the data type used to relay calls to the attest function. It's the value of
     // keccak256("Attestation(bytes32 schema,address recipient,uint64 time,uint64 expirationTime,bool revocable,bytes32 refUID,bytes data)").
@@ -40,6 +42,11 @@ contract OffchainAttestationVerifier is EIP712Verifier {
     // keccak256("Attest(uint16 version,bytes32 schema,address recipient,uint64 time,uint64 expirationTime,bool revocable,bytes32 refUID,bytes data)").
     bytes32 private constant VERSION1_ATTEST_TYPEHASH =
         0x9a1ef129b3715afc513574bddcf4404e21b0296e3ca20fec532fe1ec8d0932ec;
+
+    // The hash of the data type used to relay calls to the attest function. It's the value of
+    // keccak256("Attest(uint16 version,bytes32 schema,address recipient,uint64 time,uint64 expirationTime,bool revocable,bytes32 refUID,bytes data,bytes32 salt)").
+    bytes32 private constant VERSION2_ATTEST_TYPEHASH =
+        0x258b757fc37a6699a984f4be01258122f834200374b34b4457b6db0dd0f71132;
 
     // The address of the global EAS contract.
     IEAS private immutable _eas;
@@ -65,7 +72,7 @@ contract OffchainAttestationVerifier is EIP712Verifier {
 
         // Verify that the version is known.
         uint16 version = attestation.version;
-        if (version > VERSION1) {
+        if (version > VERSION2) {
             return false;
         }
 
@@ -94,6 +101,8 @@ contract OffchainAttestationVerifier is EIP712Verifier {
             hash = _hashTypedDataLegacy(attestation);
         } else if (version == VERSION1) {
             hash = _hashTypedDataVersion1(attestation);
+        } else if (version == VERSION2) {
+            hash = _hashTypedDataVersion2(attestation);
         }
 
         Signature memory signature = attestation.signature;
@@ -131,7 +140,7 @@ contract OffchainAttestationVerifier is EIP712Verifier {
             );
     }
 
-    /// @dev Returns the legacy (version 0) attestation typed data hash
+    /// @dev Returns the version 1 attestation typed data hash
     /// @param attestation The offchain attestation to verify.
     /// @return The typed data hash.
     function _hashTypedDataVersion1(OffchainAttestation calldata attestation) private view returns (bytes32) {
@@ -148,6 +157,29 @@ contract OffchainAttestationVerifier is EIP712Verifier {
                         attestation.revocable,
                         attestation.refUID,
                         keccak256(attestation.data)
+                    )
+                )
+            );
+    }
+
+    /// @dev Returns the version 2 attestation typed data hash
+    /// @param attestation The offchain attestation to verify.
+    /// @return The typed data hash.
+    function _hashTypedDataVersion2(OffchainAttestation calldata attestation) private view returns (bytes32) {
+        return
+            _hashTypedDataV4(
+                keccak256(
+                    abi.encode(
+                        VERSION2_ATTEST_TYPEHASH,
+                        VERSION2,
+                        attestation.schema,
+                        attestation.recipient,
+                        attestation.time,
+                        attestation.expirationTime,
+                        attestation.revocable,
+                        attestation.refUID,
+                        keccak256(attestation.data),
+                        attestation.salt
                     )
                 )
             );
