@@ -10,11 +10,14 @@ import {
 
 export * from '../typechain-types';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AsyncReturnType<T extends (...args: any) => any> = T extends (...args: any) => Promise<infer U>
   ? U
-  : T extends (...args: any) => infer U
+  : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    T extends (...args: any) => infer U
     ? U
-    : any;
+    : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      any;
 
 type Contract<F extends ContractFactory> = AsyncReturnType<F['deploy']>;
 
@@ -41,7 +44,7 @@ export const deployOrAttach = <F extends ContractFactory>(
       bytecode: FactoryConstructor.bytecode
     },
     deploy: async (...args: Parameters<F['deploy']>): Promise<Contract<F>> => {
-      const defaultSigner = initialSigner ?? ((await ethers.getSigners())[0] as any as Signer);
+      const defaultSigner = initialSigner ?? ((await ethers.getSigners())[0] as Signer);
 
       return new FactoryConstructor(defaultSigner).deploy(...(args || [])) as Promise<Contract<F>>;
     },
@@ -55,13 +58,12 @@ export const attachOnly = <F extends ContractFactory>(
 ) => {
   return {
     attach: async (address: string, signer?: Signer): Promise<Contract<F>> => {
-      const defaultSigner = initialSigner ?? ((await ethers.getSigners())[0] as any as Signer);
+      const defaultSigner = initialSigner ?? ((await ethers.getSigners())[0] as Signer);
       return new FactoryConstructor(signer ?? defaultSigner).attach(address) as Contract<F>;
     }
   };
 };
 
-/* eslint-disable camelcase */
 const getContracts = (signer?: Signer) => ({
   connect: (signer: Signer) => getContracts(signer),
 
@@ -71,6 +73,5 @@ const getContracts = (signer?: Signer) => ({
   OffchainAttestationVerifier: deployOrAttach(OffchainAttestationVerifier__factory, signer),
   SchemaRegistry: deployOrAttach(SchemaRegistry__factory, signer)
 });
-/* eslint-enable camelcase */
 
 export default getContracts();
