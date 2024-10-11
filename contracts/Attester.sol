@@ -36,7 +36,7 @@ contract Attester {
                         recipient: address(0), // No recipient
                         expirationTime: NO_EXPIRATION_TIME, // No expiration time
                         revocable: true,
-                        refUID: EMPTY_UID, // No references UI
+                        refUID: EMPTY_UID, // No referenced UID
                         data: abi.encode(input), // Encode a single uint256 as a parameter to the schema
                         value: 0 // No value/ETH
                     })
@@ -64,7 +64,7 @@ contract Attester {
                 recipient: address(0), // No recipient
                 expirationTime: NO_EXPIRATION_TIME, // No expiration time
                 revocable: true,
-                refUID: EMPTY_UID, // No references UI
+                refUID: EMPTY_UID, // No referenced UID
                 data: abi.encode(inputs[i]), // Encode a single uint256 as a parameter to the schema
                 value: 0 // No value/ETH
             });
