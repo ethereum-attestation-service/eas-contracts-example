@@ -52,18 +52,34 @@ describe('Example Attester', () => {
 
     it('should log the attested value', async () => {
       const res = await attester.attest(schemaId, value);
-      await expect(res).to.emit(resolver, 'Attested').withArgs(value);
+      await expect(res).to.emit(resolver, 'Attested').withArgs(schemaId, value);
     });
   });
 
   describe('multi attestation', () => {
-    const values = [10n, 100n, 123456n];
+    const schema2 = 'uint256 value2';
+    let schemaId2: string;
+
+    beforeEach(async () => {
+      schemaId2 = await (
+        await registry.register({ schema: schema2, resolverAddress: await resolver.getAddress(), revocable: true })
+      ).wait();
+    });
 
     it('should log the attested value', async () => {
-      const res = await attester.multiAttest(schemaId, values);
+      const data = [
+        { schema: schemaId, inputs: [10n, 100n, 123456n] },
+        { schema: schemaId2, inputs: [5n, 23423234n] }
+      ];
 
-      for (const value of values) {
-        await expect(res).to.emit(resolver, 'Attested').withArgs(value);
+      const schemas = data.map((d) => d.schema);
+      const inputs = data.map((d) => d.inputs);
+      const res = await attester.multiAttest(schemas, inputs);
+
+      for (const { schema, inputs } of data) {
+        for (const value of inputs) {
+          await expect(res).to.emit(resolver, 'Attested').withArgs(schema, value);
+        }
       }
     });
   });
@@ -79,28 +95,49 @@ describe('Example Attester', () => {
 
     it('should handle revoke', async () => {
       const res = await attester.revoke(schemaId, uid);
-      await expect(res).to.emit(resolver, 'Revoked').withArgs(value);
+      await expect(res).to.emit(resolver, 'Revoked').withArgs(schemaId, value);
     });
   });
 
   describe('multi revocation', () => {
-    let uids: string[];
-    const values = [10n, 999n];
+    const schema2 = 'uint256 value2';
+    let schemaId2: string;
+
+    let data: { schema: string; uids: string[]; inputs: bigint[] }[];
 
     beforeEach(async () => {
-      uids = [];
+      schemaId2 = await (
+        await registry.register({ schema: schema2, resolverAddress: await resolver.getAddress(), revocable: true })
+      ).wait();
 
-      for (const value of values) {
-        const res = await attester.attest(schemaId, value);
-        uids.push(await getUIDFromAttestTx(res));
+      data = [];
+
+      const input = [
+        { schema: schemaId, inputs: [10n, 100n, 123456n] },
+        { schema: schemaId2, inputs: [5n, 23423234n] }
+      ];
+
+      for (const { schema, inputs } of input) {
+        const uids = [];
+
+        for (const value of inputs) {
+          const res = await attester.attest(schema, value);
+          uids.push(await getUIDFromAttestTx(res));
+        }
+
+        data.push({ schema, uids, inputs });
       }
     });
 
     it('should handle revoke', async () => {
-      const res = await attester.multiRevoke(schemaId, uids);
+      const schemas = data.map((d) => d.schema);
+      const uids = data.map((d) => d.uids);
+      const res = await attester.multiRevoke(schemas, uids);
 
-      for (const value of values) {
-        await expect(res).to.emit(resolver, 'Revoked').withArgs(value);
+      for (const { schema, inputs } of data) {
+        for (const value of inputs) {
+          await expect(res).to.emit(resolver, 'Revoked').withArgs(schema, value);
+        }
       }
     });
   });
