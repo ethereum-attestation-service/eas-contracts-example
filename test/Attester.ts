@@ -56,6 +56,18 @@ describe('Example Attester', () => {
     });
   });
 
+  describe('multi attestation', () => {
+    const values = [10n, 100n, 123456n];
+
+    it('should log the attested value', async () => {
+      const res = await attester.multiAttest(schemaId, values);
+
+      for (const value of values) {
+        await expect(res).to.emit(resolver, 'Attested').withArgs(value);
+      }
+    });
+  });
+
   describe('revocation', () => {
     let uid: string;
     const value = 999n;
@@ -68,6 +80,28 @@ describe('Example Attester', () => {
     it('should handle revoke', async () => {
       const res = await attester.revoke(schemaId, uid);
       await expect(res).to.emit(resolver, 'Revoked').withArgs(value);
+    });
+  });
+
+  describe('multi revocation', () => {
+    let uids: string[];
+    const values = [10n, 999n];
+
+    beforeEach(async () => {
+      uids = [];
+
+      for (const value of values) {
+        const res = await attester.attest(schemaId, value);
+        uids.push(await getUIDFromAttestTx(res));
+      }
+    });
+
+    it('should handle revoke', async () => {
+      const res = await attester.multiRevoke(schemaId, uids);
+
+      for (const value of values) {
+        await expect(res).to.emit(resolver, 'Revoked').withArgs(value);
+      }
     });
   });
 });
